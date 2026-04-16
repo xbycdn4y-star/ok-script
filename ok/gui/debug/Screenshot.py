@@ -12,6 +12,7 @@ from PySide6.QtGui import QColor
 from ok import Box, og
 from ok import Logger
 from ok.gui.Communicate import communicate
+from ok.compat.win32 import IS_WINDOWS
 from ok.util.file import find_first_existing_file, clear_folder, sanitize_filename, \
     get_relative_path
 
@@ -45,15 +46,7 @@ class Screenshot(QObject):
             self.exit_event.bind_queue(self.task_queue)
             self.thread = threading.Thread(target=self._worker, name="screenshot")
             self.thread.start()
-            fonts_dir = os.path.join(os.environ['WINDIR'], 'Fonts')
-            font = find_first_existing_file(
-                ['msyh.ttc', 'msyh.ttf', 'simsun.ttf', 'simsun.ttc', 'arial.ttf', 'arial.ttc'], fonts_dir)
-            if os.path.exists(font):
-                logger.debug(f"load font {font}")
-                self.pil_font = ImageFont.truetype(font, 30)
-            else:
-                logger.debug("load default font")
-                self.pil_font = ImageFont.load_default(30)
+            self.pil_font = self._load_font()
 
             limit = 300 * 1024 * 1024
 
@@ -70,6 +63,28 @@ class Screenshot(QObject):
                 remove_old_files(self.screenshot_folder, 7)
         else:
             self.task_queue = None
+
+    def _load_font(self):
+        if IS_WINDOWS:
+            font = find_first_existing_file(
+                ['msyh.ttc', 'msyh.ttf', 'simsun.ttf', 'simsun.ttc', 'arial.ttf', 'arial.ttc'],
+                os.path.join(os.environ.get('WINDIR', ''), 'Fonts'),
+            )
+        else:
+            font_candidates = [
+                '/usr/share/fonts/adobe-source-han-sans/SourceHanSansCN-Light.otf',
+                '/usr/share/fonts/noto-cjk/NotoSansCJK-Light.ttc',
+                '/usr/share/fonts/wps-office/FZWBK.TTF',
+                '/usr/share/fonts/TTF/DejaVuSans.ttf',
+            ]
+            font = next((item for item in font_candidates if os.path.exists(item)), "")
+
+        if font and os.path.exists(font):
+            logger.debug(f"load font {font}")
+            return ImageFont.truetype(font, 30)
+
+        logger.debug("load default font")
+        return ImageFont.load_default()
 
     def screenshot(self, frame, name, show_box, frame_box):
         if self.screenshot_folder is not None and frame is not None:
