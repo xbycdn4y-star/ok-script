@@ -4,11 +4,36 @@ import importlib
 import time
 
 import numpy as np
-import pydirectinput
-import win32api
-import win32gui
+try:
+    import pydirectinput
+except Exception:
+    class _PyDirectInputStub:
+        FAILSAFE = False
+
+        @staticmethod
+        def keyDown(_key):
+            return None
+
+        @staticmethod
+        def keyUp(_key):
+            return None
+
+        @staticmethod
+        def moveTo(*_args, **_kwargs):
+            return None
+
+        @staticmethod
+        def mouseDown(*_args, **_kwargs):
+            return None
+
+        @staticmethod
+        def mouseUp(*_args, **_kwargs):
+            return None
+
+    pydirectinput = _PyDirectInputStub()
 
 from ok.capture.adb.minitouch import random_normal_distribution, random_theta, random_rho
+from ok.compat.win32 import win32api, win32con, win32gui
 from ok.device.capture import NemuIpcCaptureMethod, BaseCaptureMethod
 from ok.util.logger import Logger
 from ok.util.process import is_admin
@@ -621,9 +646,6 @@ class PostMessageInteraction(BaseInteraction):
 
     def should_capture(self):
         return True
-
-
-import win32con
 
 vk_key_dict = {
     'F1': win32con.VK_F1,

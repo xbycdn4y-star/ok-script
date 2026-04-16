@@ -39,12 +39,11 @@ try:
 except Exception as e:
     logger.error("Failed to import git", e)
 import psutil
-import win32api
-import win32security
 from PySide6.QtCore import QCoreApplication
 
 from ok import Config
 from ok import Handler
+from ok.compat.win32 import win32api, win32security
 from ok import og
 from ok.gui.Communicate import communicate
 from ok.gui.util.Alert import alert_error, alert_info
@@ -733,5 +732,4 @@ def copy_exe_files(folder1, folder2):
     except Exception as e:
         logger.error(f'copy_exe_files error', e)
     logger.info(f'Copy exe complete. {folder1} -> {folder2}')
-
 

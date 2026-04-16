@@ -325,6 +325,8 @@ class DeviceManager:
         logger.debug(f'refresh_phones done')
 
     def refresh_emulators(self, current=False):
+        if os.name != 'nt':
+            return
         if self.adb_capture_config is None:
             return
         from ok.alas.emulator_windows import EmulatorManager

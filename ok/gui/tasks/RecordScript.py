@@ -1,9 +1,9 @@
 import time
 
-import win32gui
 from pynput import mouse, keyboard
 
 from ok import og
+from ok.compat.win32 import win32gui
 from ok.gui.Communicate import communicate
 from ok.util.logger import Logger
 

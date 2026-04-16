@@ -11,12 +11,8 @@ from enum import IntEnum
 
 import cv2
 import numpy as np
-import win32api
-import win32con
-import win32gui
-import win32process
-import win32ui
 
+from ok.compat.win32 import win32api, win32con, win32gui, win32process, win32ui
 from ok.gui.Communicate import communicate
 from ok.gui.util.Alert import alert_info
 from ok.task.exceptions import CaptureException
@@ -1522,5 +1518,4 @@ class NemuIpcCaptureMethod(BaseCaptureMethod):
 
     def connected(self):
         return True
-
 

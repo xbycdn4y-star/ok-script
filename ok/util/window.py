@@ -7,15 +7,19 @@ import sys
 import time
 
 import psutil
-import win32api
-import win32con
-import win32gui
-import win32process
 
+from ok.compat.win32 import IS_WINDOWS, win32api, win32con, win32gui, win32process
 from ok.util.logger import Logger
 
 MDT_EFFECTIVE_DPI = 0
-user32 = ctypes.WinDLL('user32', use_last_error=True)
+if IS_WINDOWS and hasattr(ctypes, "WinDLL"):
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+else:
+    class _User32Stub:
+        def __getattr__(self, _name):
+            return lambda *_args, **_kwargs: 0
+
+    user32 = _User32Stub()
 DWMWA_EXTENDED_FRAME_BOUNDS = 9
 WGC_NO_BORDER_MIN_BUILD = 20348
 WGC_MIN_BUILD = 19041
@@ -26,6 +30,8 @@ WINDOWS_BUILD_NUMBER = int(platform.version().split(".")[-1]) if sys.platform ==
 
 
 def windows_graphics_available():
+    if not IS_WINDOWS:
+        return False
     logger.info(
         f"check available WINDOWS_BUILD_NUMBER:{WINDOWS_BUILD_NUMBER} >= {WGC_NO_BORDER_MIN_BUILD} {WINDOWS_BUILD_NUMBER >= WGC_NO_BORDER_MIN_BUILD}")
     if WINDOWS_BUILD_NUMBER >= WGC_NO_BORDER_MIN_BUILD:
