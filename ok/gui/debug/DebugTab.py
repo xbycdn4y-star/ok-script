@@ -1,6 +1,5 @@
 import subprocess
 import time
-from ctypes import windll, wintypes
 
 from PySide6.QtCore import Qt, Signal, QCoreApplication
 from PySide6.QtWidgets import QWidget, QFileDialog, QCompleter, QVBoxLayout, QHBoxLayout
@@ -10,6 +9,7 @@ from qfluentwidgets import PushButton, FlowLayout, ComboBox, SearchLineEdit, Tex
 from ok import Config, og
 from ok import Handler
 from ok import Logger
+from ok.compat.win32 import IS_WINDOWS
 from ok.capture.windows.dump import dump_threads
 from ok.device.capture import ImageCaptureMethod
 from ok.device.intercation import DoNothingInteraction
@@ -110,7 +110,11 @@ class DebugTab(Tab):
         subprocess.Popen(r'explorer /select,"{}"'.format(folder))
 
     def check_hotkey(self):
+        if not IS_WINDOWS:
+            self.handler.post(self.check_hotkey, 0.5)
+            return
         # Example event type, you should use the appropriate QEvent.Type for your case
+        from ctypes import windll, wintypes
         msg = wintypes.MSG()
 
         # PeekMessageW is used to check for a hotkey press
@@ -127,6 +131,9 @@ class DebugTab(Tab):
         self.handler.post(self.check_hotkey, 0.1)
 
     def bind_hot_keys(self):
+        if not IS_WINDOWS:
+            return
+        from ctypes import windll
         MOD_ALT = 0x0001
         MOD_CONTROL = 0x0002
         VK_D = 0x44  # Virtual-Key code for 'D'
@@ -141,6 +148,9 @@ class DebugTab(Tab):
     @staticmethod
     def unregister():
         # Unregister the hotkeys
+        if not IS_WINDOWS:
+            return
+        from ctypes import windll
         logger.debug('Unregister the hotkeys')
         windll.user32.UnregisterHotKey(None, 1)
         windll.user32.UnregisterHotKey(None, 2)

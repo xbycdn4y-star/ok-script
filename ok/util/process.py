@@ -12,12 +12,15 @@ from ctypes import wintypes
 
 import psutil
 
+from ok.compat.win32 import IS_WINDOWS
 from ok.util.logger import Logger
 
 logger = Logger.get_logger(__name__)
 
 
 def is_admin():
+    if not IS_WINDOWS:
+        return False
     try:
         # Only Windows users with admin privileges can read the C drive directly
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -37,6 +40,8 @@ def run_in_new_thread(func):
 
 
 def check_mutex():
+    if not IS_WINDOWS:
+        return True
     _LPSECURITY_ATTRIBUTES = wintypes.LPVOID
     _BOOL = ctypes.c_int
     _DWORD = ctypes.c_ulong
@@ -82,6 +87,8 @@ def check_mutex():
 
 
 def restart_as_admin():
+    if not IS_WINDOWS:
+        return
     import ctypes
     if ctypes.windll.shell32.IsUserAnAdmin() == 0:
         import sys
@@ -90,6 +97,8 @@ def restart_as_admin():
 
 
 def all_pids() -> list[int]:
+    if not IS_WINDOWS:
+        return [proc.pid for proc in psutil.process_iter()]
     pidbuffer = 512
     bytes_written = ctypes.c_uint32()
     while True:
@@ -438,6 +447,6 @@ def create_shortcut(exe_path=None, shortcut_name_post=None, description=None, ta
 
 def prevent_sleeping(yes=True):
     # Prevent the system from sleeping
-    ctypes.windll.kernel32.SetThreadExecutionState(0x80000002 if yes else 0x80000000)
-
+    if IS_WINDOWS:
+        ctypes.windll.kernel32.SetThreadExecutionState(0x80000002 if yes else 0x80000000)
 

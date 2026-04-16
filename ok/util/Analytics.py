@@ -7,6 +7,7 @@ import uuid
 import psutil
 import requests
 
+from ok.compat.win32 import IS_WINDOWS
 from ok.util.config import Config
 from ok.util.logger import Logger
 
@@ -138,6 +139,8 @@ class Analytics:
 
 
 def get_screen_resolution():
+    if not IS_WINDOWS:
+        return "0x0"
     user32 = ctypes.windll.user32
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     return f"{screensize[0]}x{screensize[1]}"

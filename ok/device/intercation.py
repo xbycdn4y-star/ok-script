@@ -33,7 +33,7 @@ except Exception:
     pydirectinput = _PyDirectInputStub()
 
 from ok.capture.adb.minitouch import random_normal_distribution, random_theta, random_rho
-from ok.compat.win32 import win32api, win32con, win32gui
+from ok.compat.win32 import IS_WINDOWS, win32api, win32con, win32gui
 from ok.device.capture import NemuIpcCaptureMethod, BaseCaptureMethod
 from ok.util.logger import Logger
 from ok.util.process import is_admin
@@ -960,9 +960,13 @@ class INPUT(ctypes.Structure):
 
 
 # Define the SendInput function
-SendInput = ctypes.windll.user32.SendInput
-SendInput.argtypes = [ctypes.c_uint, ctypes.POINTER(INPUT), ctypes.c_int]
-SendInput.restype = ctypes.c_uint
+if IS_WINDOWS:
+    SendInput = ctypes.windll.user32.SendInput
+    SendInput.argtypes = [ctypes.c_uint, ctypes.POINTER(INPUT), ctypes.c_int]
+    SendInput.restype = ctypes.c_uint
+else:
+    def SendInput(*_args, **_kwargs):
+        return 0
 
 
 class GenshinInteraction(BaseInteraction):
@@ -972,7 +976,7 @@ class GenshinInteraction(BaseInteraction):
         self.post_interaction = PostMessageInteraction(capture, hwnd_window)
         self.hwnd_window = hwnd_window
         self.hwnd_window.visible_monitors.append(self)
-        self.user32 = ctypes.windll.user32
+        self.user32 = ctypes.windll.user32 if IS_WINDOWS else None
         self.cursor_position = None
 
     @property
@@ -1030,10 +1034,12 @@ class GenshinInteraction(BaseInteraction):
         self.operate(lambda: self.do_send_key(key, down_time))
 
     def block_input(self):
-        self.user32.BlockInput(True)
+        if self.user32 is not None:
+            self.user32.BlockInput(True)
 
     def unblock_input(self):
-        self.user32.BlockInput(False)
+        if self.user32 is not None:
+            self.user32.BlockInput(False)
 
     def send_key_down(self, key):
         current_position = win32api.GetCursorPos()

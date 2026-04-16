@@ -1,5 +1,3 @@
-from ctypes import windll, wintypes
-
 from PySide6.QtCore import Qt, Signal
 from _ctypes import byref
 from qfluentwidgets import FluentIcon, SettingCard, PushButton
@@ -7,6 +5,7 @@ from qfluentwidgets import FluentIcon, SettingCard, PushButton
 from ok import Handler
 from ok import Logger
 from ok import og
+from ok.compat.win32 import IS_WINDOWS
 from ok.gui.Communicate import communicate
 from ok.gui.widget.StatusBar import StatusBar
 
@@ -114,12 +113,16 @@ class StartCard(SettingCard):
             self.status_bar.show()
 
     def check_hotkey(self):
+        if not IS_WINDOWS:
+            self.handler.post(self.check_hotkey, 0.5)
+            return
         new_hotkey = self.basic_options.get('Start/Stop')
         if new_hotkey != self.current_hotkey:
             self.rebind_hotkey(new_hotkey)
             self.current_hotkey = new_hotkey
             self.hotkey_changed.emit()
 
+        from ctypes import windll, wintypes
         msg = wintypes.MSG()
         if windll.user32.PeekMessageW(byref(msg), None, 0, 0, 1):
             if msg.message == 0x0312:  # WM_HOTKEY
@@ -130,6 +133,9 @@ class StartCard(SettingCard):
         self.handler.post(self.check_hotkey, 0.1)
 
     def rebind_hotkey(self, hotkey):
+        if not IS_WINDOWS:
+            return
+        from ctypes import windll
         windll.user32.UnregisterHotKey(None, 999)
         vk_map = {'F9': 0x78, 'F10': 0x79, 'F11': 0x7A, 'F12': 0x7B}
 
