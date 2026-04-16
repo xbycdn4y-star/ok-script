@@ -524,8 +524,11 @@ class OkGlobals:
 
     def set_dpi_scaling(self, window):
         window_handle = window.windowHandle()
-        screen = window_handle.screen()
-        self.dpi_scaling = screen.devicePixelRatio()
+        screen = window_handle.screen() if window_handle is not None else None
+        if screen is None:
+            app = getattr(self, "app", None)
+            screen = app.app.primaryScreen() if app and getattr(app, "app", None) else None
+        self.dpi_scaling = screen.devicePixelRatio() if screen is not None else 1.0
         logger.debug('dpi_scaling: {}'.format(self.dpi_scaling))
 
 
