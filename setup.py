@@ -1,7 +1,6 @@
 import os
 import setuptools
 import sys
-from get_pypi_latest_version import GetPyPiLatestVersion
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -9,11 +8,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 MODULE_NAME = "ok-script"
 
-obtainer = GetPyPiLatestVersion()
-latest_version = obtainer(MODULE_NAME)
+VERSION_NUM = os.environ.get("OK_SCRIPT_VERSION", "1.0.105")
+try:
+    from get_pypi_latest_version import GetPyPiLatestVersion
 
-VERSION_NUM = obtainer.version_add_one(latest_version, add_patch=True)
-print(f'latest_version is {latest_version} new version is {VERSION_NUM}')
+    obtainer = GetPyPiLatestVersion()
+    latest_version = obtainer(MODULE_NAME)
+    VERSION_NUM = obtainer.version_add_one(latest_version, add_patch=True)
+    print(f'latest_version is {latest_version} new version is {VERSION_NUM}')
+except Exception as exc:
+    print(f'fallback version {VERSION_NUM} because latest-version lookup failed: {exc}')
 
 setuptools.setup(
     name=MODULE_NAME,
