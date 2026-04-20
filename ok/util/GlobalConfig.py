@@ -11,6 +11,7 @@ basic_options = ConfigOption('Basic Options', {
     'Auto Resize Game Window': True,
     'Exit App when Game Exits': False,
     'Use DirectML': 'Yes',
+    'Capture Max FPS': 0,
     'Trigger Interval': 1,
     'Start/Stop': 'F9',
     'Kill Launcher after Start': False,
@@ -18,6 +19,7 @@ basic_options = ConfigOption('Basic Options', {
 }, config_type={'Use DirectML': {'type': "drop_down", 'options': ['Auto', 'Yes', 'No']},
                 'Start/Stop': {'type': "drop_down", 'options': ['None', 'F9', 'F10', 'F11', 'F12']}}
                              , config_description={'Use DirectML': 'Use GPU to Improve Performance',
+                                                   'Capture Max FPS': 'Limit Linux X11 capture frequency. 0 disables the cap.',
                                                    'Start/Stop': 'HotKey',
                                                    'Trigger Interval': 'Increase Delay between Trigger Tasks to Reduce CPU/GPU Usage(Milliseconds)'},
                              icon=FluentIcon.GAME)
